@@ -64,10 +64,12 @@ def create_app() -> FastAPI:
 
     # Routes
     app.include_router(api_router, prefix=settings.api_v1_prefix)
-    # Health is also available without version prefix for probes
+    # Health and uploaded media fallback are also available without version prefix
     from src.presentation.api.routes.health import router as health_router
+    from src.presentation.api.routes.uploads import public_uploads_router
 
     app.include_router(health_router)
+    app.include_router(public_uploads_router)
 
     return app
 

@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     cors_allow_methods: list[str] = ["*"]
     cors_allow_headers: list[str] = ["*"]
 
+    # Media uploads
+    upload_dir: str = "uploads"
+    max_upload_size_mb: int = 10
+
     @property
     def is_production(self) -> bool:
         return self.environment == "production"

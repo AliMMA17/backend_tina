@@ -3,5 +3,6 @@ from src.domain.interfaces.repositories import (
     IUnitOfWork,
     IUserRepository,
 )
+from src.domain.interfaces.storage import IFileStorage
 
-__all__ = ["IBlogRepository", "IUnitOfWork", "IUserRepository"]
+__all__ = ["IBlogRepository", "IFileStorage", "IUnitOfWork", "IUserRepository"]

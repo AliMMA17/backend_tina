@@ -11,6 +11,7 @@ from src.application.dto.blog import (
     CreateBlogDTO,
     UpdateBlogDTO,
 )
+from src.application.dto.upload import UploadedImageDTO
 from src.application.dto.user import UserDTO, UserListDTO
 
 __all__ = [
@@ -23,6 +24,7 @@ __all__ = [
     "RegisterUserDTO",
     "TokenPairDTO",
     "UpdateBlogDTO",
+    "UploadedImageDTO",
     "UserDTO",
     "UserListDTO",
 ]

@@ -30,14 +30,18 @@ from src.application.use_cases.blog import (
     ListPublishedBlogsUseCase,
     UpdateBlogUseCase,
 )
+from src.application.use_cases.upload import UploadImageUseCase
 from src.application.use_cases.user import ListUsersUseCase
+from src.core.config import get_settings
 from src.core.security import decode_access_token
 from src.domain.exceptions import AuthenticationError, AuthorizationError
 from src.domain.interfaces.repositories import IUnitOfWork, IUserRepository
+from src.domain.interfaces.storage import IFileStorage
 from src.domain.value_objects.role import UserRole
 from src.infrastructure.database.session import get_async_session, get_session_factory
 from src.infrastructure.repositories.unit_of_work import SQLAlchemyUnitOfWork
 from src.infrastructure.repositories.user import PostgresUserRepository
+from src.infrastructure.storage.local import LocalFileStorage
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -118,6 +122,21 @@ async def get_blog_by_id_use_case(
     return GetBlogByIdUseCase(uow)
 
 
+def get_file_storage() -> IFileStorage:
+    settings = get_settings()
+    return LocalFileStorage(base_dir=settings.upload_dir, url_prefix="/uploads")
+
+
+def get_upload_image_use_case(
+    storage: Annotated[IFileStorage, Depends(get_file_storage)],
+) -> UploadImageUseCase:
+    settings = get_settings()
+    return UploadImageUseCase(
+        storage=storage,
+        max_size_bytes=settings.max_upload_size_mb * 1024 * 1024,
+    )
+
+
 async def get_current_token_payload(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
 ) -> dict[str, Any]:
@@ -183,6 +202,8 @@ GetPublishedBlogBySlugUC = Annotated[
 ]
 ListAllBlogsUC = Annotated[ListAllBlogsUseCase, Depends(get_list_all_blogs_use_case)]
 GetBlogByIdUC = Annotated[GetBlogByIdUseCase, Depends(get_blog_by_id_use_case)]
+FileStorageDep = Annotated[IFileStorage, Depends(get_file_storage)]
+UploadImageUC = Annotated[UploadImageUseCase, Depends(get_upload_image_use_case)]
 UnitOfWorkDep = Annotated[IUnitOfWork, Depends(get_unit_of_work)]
 AsyncSessionDep = Annotated[AsyncSession, Depends(get_async_session)]
 CurrentTokenPayload = Annotated[dict[str, Any], Depends(get_current_token_payload)]

@@ -11,6 +11,7 @@ from src.presentation.schemas.blog import (
     CreateBlogRequest,
     UpdateBlogRequest,
 )
+from src.presentation.schemas.upload import UploadedImageResponse
 from src.presentation.schemas.user import UserListResponse, UserResponse
 
 __all__ = [
@@ -23,6 +24,7 @@ __all__ = [
     "RegisterResponse",
     "TokenResponse",
     "UpdateBlogRequest",
+    "UploadedImageResponse",
     "UserListResponse",
     "UserResponse",
 ]
