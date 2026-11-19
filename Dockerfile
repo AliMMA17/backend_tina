@@ -57,6 +57,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=builder /opt/venv /opt/venv
 COPY --chown=app:app . .
+RUN mkdir -p /app/uploads && chown -R app:app /app
 
 USER app
 

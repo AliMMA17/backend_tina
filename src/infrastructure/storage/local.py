@@ -21,7 +21,8 @@ class LocalFileStorage(IFileStorage):
             raise ValueError(f"Unsafe filename: {filename}")
 
         def _write() -> None:
-            self._base_dir.mkdir(parents=True, exist_ok=True)
+            if not self._base_dir.is_dir():
+                self._base_dir.mkdir(parents=True, exist_ok=True)
             target = (self._base_dir / filename).resolve()
             if target.parent != self._base_dir:
                 raise ValueError("Invalid target path")
