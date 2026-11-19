@@ -1,5 +1,6 @@
 """Authentication use cases: register, login, and refresh tokens."""
 
+import re
 from uuid import UUID
 
 from src.application.dto.auth import (
@@ -60,6 +61,9 @@ def _issue_token_pair(user: User) -> TokenPairDTO:
     )
 
 
+_USERNAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+
 class RegisterUserUseCase:
     """Register a new customer user via Unit of Work and issue JWT token pair."""
 
@@ -67,8 +71,10 @@ class RegisterUserUseCase:
         self._uow = uow
 
     async def execute(self, dto: RegisterUserDTO) -> AuthResultDTO:
-        if not dto.username or any(ch.isspace() for ch in dto.username):
-            raise ValidationError("Username must not contain spaces")
+        if not _USERNAME_RE.match(dto.username):
+            raise ValidationError(
+                "Username must contain only English letters, digits, '_', '.', or '-' with no spaces"
+            )
         username = dto.username
         phone_number = "".join(dto.phone_number.split()).translate(
             str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")

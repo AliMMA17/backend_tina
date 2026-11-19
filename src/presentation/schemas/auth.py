@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from src.presentation.schemas.user import UserResponse
 
 _DIGIT_TRANSLATION = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+_USERNAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 _PHONE_RE = re.compile(r"^\+?[0-9]{5,20}$")
 
 
@@ -18,9 +19,11 @@ def _strip_required_str(value: str) -> str:
     return stripped
 
 
-def _validate_no_whitespace_username(value: str) -> str:
-    if not value or any(ch.isspace() for ch in value):
-        raise ValueError("Username must not contain spaces")
+def _validate_username_format(value: str) -> str:
+    if not _USERNAME_RE.match(value):
+        raise ValueError(
+            "Username must contain only English letters, digits, '_', '.', or '-' with no spaces"
+        )
     return value
 
 
@@ -66,7 +69,7 @@ class RegisterRequest(BaseModel):
     @field_validator("username")
     @classmethod
     def _validate_username(cls, value: str) -> str:
-        return _validate_no_whitespace_username(value)
+        return _validate_username_format(value)
 
     @field_validator("phone_number")
     @classmethod
@@ -98,7 +101,7 @@ class LoginRequest(BaseModel):
     @field_validator("username")
     @classmethod
     def _validate_username(cls, value: str) -> str:
-        return _validate_no_whitespace_username(value)
+        return _validate_username_format(value)
 
 
 class RefreshTokenRequest(BaseModel):
