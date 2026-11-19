@@ -3,30 +3,41 @@
 Decision: Keep cryptographic primitives in core so both application
 use-cases and presentation layer can depend on them without pulling
 infrastructure concerns upward. Implementations are thin wrappers
-around well-audited libraries (passlib + python-jose).
+around well-audited libraries (bcrypt + python-jose).
 """
 
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from src.core.config import get_settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 TokenType = Literal["access", "refresh"]
+_BCRYPT_MAX_BYTES = 72
+
+
+def _encode_password(password: str) -> bytes:
+    """Encode password as UTF-8, truncated to bcrypt's 72-byte limit."""
+    return password.encode("utf-8")[:_BCRYPT_MAX_BYTES]
 
 
 def hash_password(password: str) -> str:
-    """Hash a plain-text password."""
-    return pwd_context.hash(password)
+    """Hash a plain-text password using bcrypt."""
+    hashed = bcrypt.hashpw(_encode_password(password), bcrypt.gensalt())
+    return hashed.decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plain-text password against a hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify a plain-text password against a bcrypt hash."""
+    try:
+        return bcrypt.checkpw(
+            _encode_password(plain_password),
+            hashed_password.encode("utf-8"),
+        )
+    except ValueError:
+        return False
 
 
 def _create_token(
