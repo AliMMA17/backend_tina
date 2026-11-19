@@ -21,6 +21,15 @@ from src.application.use_cases.auth import (
     RegisterUserUseCase,
     to_user_dto,
 )
+from src.application.use_cases.blog import (
+    CreateBlogUseCase,
+    DeleteBlogUseCase,
+    GetBlogByIdUseCase,
+    GetPublishedBlogBySlugUseCase,
+    ListAllBlogsUseCase,
+    ListPublishedBlogsUseCase,
+    UpdateBlogUseCase,
+)
 from src.application.use_cases.user import ListUsersUseCase
 from src.core.security import decode_access_token
 from src.domain.exceptions import AuthenticationError, AuthorizationError
@@ -65,6 +74,48 @@ async def get_list_users_use_case(
     uow: Annotated[IUnitOfWork, Depends(get_unit_of_work)],
 ) -> ListUsersUseCase:
     return ListUsersUseCase(uow)
+
+
+async def get_create_blog_use_case(
+    uow: Annotated[IUnitOfWork, Depends(get_unit_of_work)],
+) -> CreateBlogUseCase:
+    return CreateBlogUseCase(uow)
+
+
+async def get_update_blog_use_case(
+    uow: Annotated[IUnitOfWork, Depends(get_unit_of_work)],
+) -> UpdateBlogUseCase:
+    return UpdateBlogUseCase(uow)
+
+
+async def get_delete_blog_use_case(
+    uow: Annotated[IUnitOfWork, Depends(get_unit_of_work)],
+) -> DeleteBlogUseCase:
+    return DeleteBlogUseCase(uow)
+
+
+async def get_list_published_blogs_use_case(
+    uow: Annotated[IUnitOfWork, Depends(get_unit_of_work)],
+) -> ListPublishedBlogsUseCase:
+    return ListPublishedBlogsUseCase(uow)
+
+
+async def get_published_blog_by_slug_use_case(
+    uow: Annotated[IUnitOfWork, Depends(get_unit_of_work)],
+) -> GetPublishedBlogBySlugUseCase:
+    return GetPublishedBlogBySlugUseCase(uow)
+
+
+async def get_list_all_blogs_use_case(
+    uow: Annotated[IUnitOfWork, Depends(get_unit_of_work)],
+) -> ListAllBlogsUseCase:
+    return ListAllBlogsUseCase(uow)
+
+
+async def get_blog_by_id_use_case(
+    uow: Annotated[IUnitOfWork, Depends(get_unit_of_work)],
+) -> GetBlogByIdUseCase:
+    return GetBlogByIdUseCase(uow)
 
 
 async def get_current_token_payload(
@@ -121,6 +172,17 @@ RegisterUserUC = Annotated[RegisterUserUseCase, Depends(get_register_user_use_ca
 LoginUserUC = Annotated[LoginUserUseCase, Depends(get_login_user_use_case)]
 RefreshTokenUC = Annotated[RefreshTokenUseCase, Depends(get_refresh_token_use_case)]
 ListUsersUC = Annotated[ListUsersUseCase, Depends(get_list_users_use_case)]
+CreateBlogUC = Annotated[CreateBlogUseCase, Depends(get_create_blog_use_case)]
+UpdateBlogUC = Annotated[UpdateBlogUseCase, Depends(get_update_blog_use_case)]
+DeleteBlogUC = Annotated[DeleteBlogUseCase, Depends(get_delete_blog_use_case)]
+ListPublishedBlogsUC = Annotated[
+    ListPublishedBlogsUseCase, Depends(get_list_published_blogs_use_case)
+]
+GetPublishedBlogBySlugUC = Annotated[
+    GetPublishedBlogBySlugUseCase, Depends(get_published_blog_by_slug_use_case)
+]
+ListAllBlogsUC = Annotated[ListAllBlogsUseCase, Depends(get_list_all_blogs_use_case)]
+GetBlogByIdUC = Annotated[GetBlogByIdUseCase, Depends(get_blog_by_id_use_case)]
 UnitOfWorkDep = Annotated[IUnitOfWork, Depends(get_unit_of_work)]
 AsyncSessionDep = Annotated[AsyncSession, Depends(get_async_session)]
 CurrentTokenPayload = Annotated[dict[str, Any], Depends(get_current_token_payload)]

@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from uuid import UUID
 
+from src.domain.entities.blog import Blog
 from src.domain.entities.user import User
 
 
@@ -52,6 +53,51 @@ class IUserRepository(ABC):
         ...
 
 
+class IBlogRepository(ABC):
+    """Port for Blog persistence operations."""
+
+    @abstractmethod
+    async def get_by_id(self, blog_id: UUID) -> Blog | None:
+        """Retrieve a blog post by primary key."""
+        ...
+
+    @abstractmethod
+    async def get_by_slug(self, slug: str) -> Blog | None:
+        """Retrieve a blog post by unique slug."""
+        ...
+
+    @abstractmethod
+    async def list(
+        self,
+        *,
+        offset: int = 0,
+        limit: int = 20,
+        published_only: bool | None = True,
+    ) -> Sequence[Blog]:
+        """Return a paginated list of blog posts."""
+        ...
+
+    @abstractmethod
+    async def count(self, *, published_only: bool | None = True) -> int:
+        """Return total number of blog posts matching the filter."""
+        ...
+
+    @abstractmethod
+    async def add(self, blog: Blog) -> Blog:
+        """Persist a new blog post and return it."""
+        ...
+
+    @abstractmethod
+    async def update(self, blog: Blog) -> Blog:
+        """Persist changes to an existing blog post and return it."""
+        ...
+
+    @abstractmethod
+    async def delete(self, blog_id: UUID) -> bool:
+        """Delete a blog post by ID. Returns True if a row was deleted."""
+        ...
+
+
 class IUnitOfWork(ABC):
     """Unit of Work port.
 
@@ -62,6 +108,7 @@ class IUnitOfWork(ABC):
     """
 
     users: IUserRepository
+    blogs: IBlogRepository
 
     @abstractmethod
     async def __aenter__(self) -> "IUnitOfWork":

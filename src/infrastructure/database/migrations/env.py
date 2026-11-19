@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from src.core.config import get_settings
 from src.infrastructure.database.models import Base  # noqa: F401 — register models
+from src.infrastructure.database.models.blog import BlogModel  # noqa: F401
 from src.infrastructure.database.models.user import UserModel  # noqa: F401
 
 config = context.config

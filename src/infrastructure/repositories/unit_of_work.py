@@ -8,7 +8,12 @@ commit/rollback as a single unit.
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from src.domain.interfaces.repositories import IUnitOfWork, IUserRepository
+from src.domain.interfaces.repositories import (
+    IBlogRepository,
+    IUnitOfWork,
+    IUserRepository,
+)
+from src.infrastructure.repositories.blog import PostgresBlogRepository
 from src.infrastructure.repositories.user import PostgresUserRepository
 
 
@@ -19,10 +24,12 @@ class SQLAlchemyUnitOfWork(IUnitOfWork):
         self._session_factory = session_factory
         self._session: AsyncSession | None = None
         self.users: IUserRepository  # set in __aenter__
+        self.blogs: IBlogRepository  # set in __aenter__
 
     async def __aenter__(self) -> "SQLAlchemyUnitOfWork":
         self._session = self._session_factory()
         self.users = PostgresUserRepository(self._session)
+        self.blogs = PostgresBlogRepository(self._session)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:  # type: ignore[no-untyped-def]
