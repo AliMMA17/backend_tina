@@ -27,6 +27,7 @@ class LocalFileStorage(IFileStorage):
             if target.parent != self._base_dir:
                 raise ValueError("Invalid target path")
             target.write_bytes(content)
+            target.chmod(0o644)
 
         await asyncio.to_thread(_write)
         return f"{self._url_prefix}/{filename}"
