@@ -26,7 +26,7 @@ All `api_router` routes are mounted under `settings.api_v1_prefix` (`/api/v1`).
 
 ### Media Uploads (`/api/v1/uploads` & `/uploads`)
 - `POST /api/v1/uploads/images` — **Admin only**. Accepts `multipart/form-data` (`file`), verifies magic bytes (`JPEG`, `PNG`, `WebP`, `GIF`) and size (`MAX_UPLOAD_SIZE_MB`, default `10`), saves to `UPLOAD_DIR` (`/app/uploads`, host-mounted from `app/uploads/`), and returns `{ filename, url: "/uploads/<uuid>.<ext>", content_type, size_bytes }`.
-- `GET /uploads/{filename}` — **Public**. Served directly by Nginx (`gateway/default.conf` mounting `../app/uploads:/var/www/uploads:ro`), with a FastAPI fallback route for local dev without Nginx.
+- `GET /uploads/{filename}` — **Public**. Proxied by Nginx (`gateway/default.conf`) to `backend:8000`, which serves the file from `UPLOAD_DIR` (`app/uploads/` on the host) with immutable cache headers.
 
 ## Domain Error → HTTP Status Mapping
 
@@ -51,5 +51,5 @@ Defined in `src/presentation/api/exception_handlers.py`:
 
 ### Docker Compose Networking (`app/docker-compose/backend.yml`)
 - `backend` container runs on `backend_net` (private bridge to `backend-db`) and `gateway_net` (shared with Nginx reverse proxy at `gateway/default.conf`, which forwards `/api/` to `http://backend:8000`).
-- `backend` bind-mounts `../uploads:/app/uploads` (host directory `app/uploads/`). `gateway-nginx` mounts `../app/uploads:/var/www/uploads:ro` to serve `/uploads/` directly.
+- `backend` bind-mounts `../uploads:/app/uploads` (host directory `app/uploads/`). `gateway-nginx` proxies `/uploads/` and `/api/` to `http://backend:8000`.
 - `db` (`postgres:16-alpine`) runs only on `backend_net`; port `5432` is not published externally.

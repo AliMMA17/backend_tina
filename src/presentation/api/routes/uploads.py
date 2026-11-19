@@ -56,9 +56,10 @@ async def upload_image(
     return UploadedImageResponse.model_validate(result)
 
 
-@public_uploads_router.get(
+@public_uploads_router.api_route(
     "/{filename}",
-    summary="Serve an uploaded image (local/fallback when not served by Nginx)",
+    methods=["GET", "HEAD"],
+    summary="Serve an uploaded image",
 )
 async def serve_uploaded_image(
     filename: str,

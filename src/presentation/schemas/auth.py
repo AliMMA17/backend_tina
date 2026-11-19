@@ -1,10 +1,14 @@
 """Authentication Pydantic v2 request/response schemas."""
 
+import re
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.presentation.schemas.user import UserResponse
+
+_DIGIT_TRANSLATION = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+_PHONE_RE = re.compile(r"^\+?[0-9]{5,20}$")
 
 
 def _strip_required_str(value: str) -> str:
@@ -12,6 +16,19 @@ def _strip_required_str(value: str) -> str:
     if not stripped:
         raise ValueError("Field must not be blank")
     return stripped
+
+
+def _validate_no_whitespace_username(value: str) -> str:
+    if not value or any(ch.isspace() for ch in value):
+        raise ValueError("Username must not contain spaces")
+    return value
+
+
+def _normalize_and_validate_phone(value: str) -> str:
+    normalized = re.sub(r"\s+", "", value.translate(_DIGIT_TRANSLATION))
+    if not _PHONE_RE.match(normalized):
+        raise ValueError("Phone number must contain only English digits (0-9)")
+    return normalized
 
 
 def _normalize_optional_text(value: Any) -> str | None:
@@ -46,7 +63,17 @@ class RegisterRequest(BaseModel):
     work_page: str | None = Field(default=None, max_length=500)
     income: str | None = Field(default=None, max_length=255)
 
-    @field_validator("username", "full_name", "phone_number", "full_address", "job")
+    @field_validator("username")
+    @classmethod
+    def _validate_username(cls, value: str) -> str:
+        return _validate_no_whitespace_username(value)
+
+    @field_validator("phone_number")
+    @classmethod
+    def _validate_phone_number(cls, value: str) -> str:
+        return _normalize_and_validate_phone(value)
+
+    @field_validator("full_name", "full_address", "job")
     @classmethod
     def _validate_required_strings(cls, value: str) -> str:
         return _strip_required_str(value)
@@ -71,7 +98,7 @@ class LoginRequest(BaseModel):
     @field_validator("username")
     @classmethod
     def _validate_username(cls, value: str) -> str:
-        return _strip_required_str(value)
+        return _validate_no_whitespace_username(value)
 
 
 class RefreshTokenRequest(BaseModel):

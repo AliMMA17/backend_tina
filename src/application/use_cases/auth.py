@@ -18,7 +18,11 @@ from src.core.security import (
     verify_password,
 )
 from src.domain.entities.user import User
-from src.domain.exceptions import AuthenticationError, EntityAlreadyExistsError
+from src.domain.exceptions import (
+    AuthenticationError,
+    EntityAlreadyExistsError,
+    ValidationError,
+)
 from src.domain.interfaces.repositories import IUnitOfWork
 from src.domain.value_objects.role import UserRole
 
@@ -63,8 +67,12 @@ class RegisterUserUseCase:
         self._uow = uow
 
     async def execute(self, dto: RegisterUserDTO) -> AuthResultDTO:
-        username = dto.username.strip()
-        phone_number = dto.phone_number.strip()
+        if not dto.username or any(ch.isspace() for ch in dto.username):
+            raise ValidationError("Username must not contain spaces")
+        username = dto.username
+        phone_number = "".join(dto.phone_number.split()).translate(
+            str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+        )
 
         async with self._uow:
             if await self._uow.users.get_by_username(username) is not None:
